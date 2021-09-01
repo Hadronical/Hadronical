@@ -1,6 +1,6 @@
 - 👋 Hi, I’m @Hadronical
 - 👀 I’m interested in math, physics, computer science, astronomy, and rocket science!
-- 🌱 I’m currently learning stuff :)
+- 🌱 I’m like learning new stuff :)
 - 💞️ I’m looking to collaborate on anything I guess
 - 📫 How to reach me ...
 
