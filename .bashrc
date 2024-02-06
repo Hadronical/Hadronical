@@ -1,13 +1,14 @@
 # ALIASES
 #=========
 	# cd
-	alias ..="cd .."
+	alias ..="cd ..; ls"
 	alias code="cd ~/Desktop/Other/Coding"
 	alias gogo="cd ~/go"
 	
 	# ls
 	alias sl="ls"
 	alias ls="ls -CF"
+	alias lsa="ls -a"
 	
 	# mkdir
 	alias mkdir="mkdir -pv"
