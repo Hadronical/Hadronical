@@ -40,7 +40,7 @@ let g:limelight_conceal_ctermfg = 235
 let g:limelight_paragraph_span = 1
 
 " CREATE SIDE FILE EXPLORER
-nnoremap ,f <Esc><C-W>v:edit .<CR><C-W>40<
+nnoremap ,f <Esc><C-W>v:edit .<CR><C-W>100<<C-W>30>
 
 " LIMELIGHT MAPPINGS
 nnoremap <Leader>l :Limelight<CR>
@@ -281,4 +281,4 @@ hi Boolean ctermfg=red
 hi Comment cterm=italic ctermfg=white ctermbg=237
 hi Statement ctermfg=red
 hi Conditional ctermfg=197
-hi Repeat ctermfg=197
+h
