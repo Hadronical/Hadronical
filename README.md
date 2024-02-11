@@ -4,5 +4,6 @@
 - 🌱 I love learning new things :)
 
 ### 📫 How to reach me:
-- IG: *@s.unny.tuff*
+- email: sunny.yfl@gmail.com
 - Discord: *s_trangeq_u_ark_nny*
+- IG: *@s.unny.tuff*
