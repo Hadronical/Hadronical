@@ -4,19 +4,20 @@ set nocompatible
 filetype on
 
 call plug#begin('~/local/vim/plug_config')
-
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'vim-airline/vim-airline'
-
-Plug 'mattn/emmet-vim'
-Plug 'junegunn/limelight.vim'
-Plug 'jiangmiao/auto-pairs'
-
+	
+	Plug 'sheerun/vim-polyglot'
+	Plug 'neoclide/coc.nvim', {'branch': 'release'}
+	
+	Plug 'vim-airline/vim-airline'
+	
+	Plug 'mattn/emmet-vim'
+	Plug 'junegunn/limelight.vim'
+	Plug 'jiangmiao/auto-pairs'
+	
 call plug#end()
 
 let &t_ZH="\e[3m"
 let &t_ZR="\e[23m"
-
 
 source $HOME/.vim/plug_config/coc.vim
 
@@ -28,6 +29,8 @@ set path+=**
 " DISPLAY ALL MATCHING FILES FOR TAB-COMPLETE
 set wildmenu
 
+" Python provider
+let g:python3_host_prog = '/Library/Frameworks/Python.framework/Versions/3.7/bin/python3'
 
 " VISUAL FILE BROWSING
 let g:netrw_banner=0        " disable banner
@@ -52,18 +55,16 @@ nnoremap ,cpp :-1read ~/.vim/.skeleton.cc<CR>G2kA
 nnoremap ,usaco :-1read ~/.vim/.skeletonusaco.cc<CR>G2kA
 
 " OTHER MAPPINGS
-nnoremap ,goSearch :<silent>!bash ~/Desktop/Other/Coding/google.sh
-nnoremap <C-S> :w<CR>
-nnoremap ,q :q<CR>
-nnoremap ,x :x<CR>
 nnoremap r <C-R>
 vnoremap f :zf<CR>
 nnoremap <Tab> <S-A>
 nnoremap ; :
+cnoremap <C-N> <C-G>
+cnoremap <C-P> <C-T>
 
 " TAB NAVIGATION
-nnoremap tt :tabnew 
-nnoremap ,to :call TABOptions()
+nnoremap ,t :tabnew 
+" nnoremap ,to :call TABOptions()<CR>
 nnoremap H gT
 nnoremap L gt
 
@@ -134,13 +135,15 @@ endfunction
 set foldtext=MyFoldText()
 
 
-au InsertEnter * :set nocursorline
+au InsertEnter * :set cursorline
 au InsertEnter * :set nocursorcolumn
 au WinEnter * :set cursorline
 " au InsertCharPre * :call AutoComplete()
 
 au BufNewFile,BufRead,BufEnter * :silent loadview
 au BufLeave,BufWinLeave * :mkview
+
+au BufReadPost,BufNewFile *.o :%!xxd; set ft=xxd
 
 au WinEnter * if winnr('$') == 1 && getbufvar(winbufnr(winnr()), "&filetype") == "netrw" || &buftype == 'quickfix' |q|endif
 
@@ -153,8 +156,7 @@ inoremap <expr> <Right> pumvisible() ? "<C-Y>" : "<Right>"
 inoremap <expr> <CR> pumvisible() ? "<C-Y>" : "<CR>"
 " Cancels complete menu
 inoremap <expr> <Left> pumvisible() ? "<C-E>" : "<Left>"
-" Save
-inoremap <C-S> <Esc>:w<CR>i
+
 " Comment current line
 nnoremap <C-C> 0wi//<Esc>
 inoremap <C-C> <Esc>0wi//<Esc>``i
@@ -172,10 +174,14 @@ au FileType html let b:AutoPairs = AutoPairsDefine({'<!--':'-->', '<':'>'})
 " nnoremap <expr> <S-F> (GetCurrentChar() =~ '(') ? "%x``x" :":echo GetCurrentChar()<cr>"
 
 " Slower Scrolling
-noremap <ScrollWheelUp> <C-Y>
-noremap <ScrollWheelDown> <C-E>
+noremap <ScrollWheelUp> <C-Y>k
+noremap <ScrollWheelDown> <C-E>j
 
 " GENERAL CONFIG
+set title
+
+set t_Co=256
+
 syntax on
 
 set backspace=indent,eol,start
@@ -183,13 +189,12 @@ set backspace=indent,eol,start
 set fillchars+=vert:\
 set fillchars=fold:\ 
 set completeopt=menuone,preview,noinsert,noselect
-set completepopup=align:item,border:on
 filetype plugin on
 set omnifunc=syntaxcomplete#Complete
 
 set tabstop=4 softtabstop=4
 set shiftwidth=4
-set number
+set number relativenumber
 set scl=yes
 set showcmd
 set noshowmode
@@ -203,9 +208,15 @@ set pumheight=20
 set nowrap
 set showmatch
 set list
-set hlsearch
 
-set listchars=tab:\│\ 
+" match highlighting on when searching, off when done
+augroup vimrc-incsearch-highlight
+  autocmd!
+  autocmd CmdlineEnter /,\? :set hlsearch
+  autocmd CmdlineLeave /,\? :set nohlsearch
+augroup END
+
+set listchars=tab:\‚îÇ\ 
 
 set mouse=a
 set mousemodel=extend
@@ -281,4 +292,4 @@ hi Boolean ctermfg=red
 hi Comment cterm=italic ctermfg=white ctermbg=237
 hi Statement ctermfg=red
 hi Conditional ctermfg=197
-h
+hi Repeat ctermfg=197
