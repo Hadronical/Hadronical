@@ -3,12 +3,21 @@
 	# cd
 	alias ..="cd ..; ls"
 	alias code="cd ~/Desktop/Other/Coding"
+	alias latex="cd ~/Documents/Latex"
 	alias gogo="cd ~/go"
 	
-	# ls
+	# listing
+	alias list="eza --icons --classify --color=always"
+	alias ld="list -lDh --no-time --no-user --no-filesize"
+	alias lf="list -f"
+	alias ls="list --group-directories-first"
 	alias sl="ls"
-	alias ls="ls -CF"
-	alias lsa="ls -a"
+	alias la="ls -a"
+	alias lt="list -T --level=2"
+	
+	# http requests
+	alias http="xh -v --pretty all"
+	alias httpbody="xh -b"
 	
 	# mkdir
 	alias mkdir="mkdir -pv"
@@ -16,8 +25,8 @@
 	# date
 	alias date="date +\"%a|%d/%m/%Y || %R\""
 	
-	# files
-	alias fcnt="find . -maxdepth 1 -type f | wc -l"
+	# vim to neovim
+	alias vim="nvim"
 	
 
 # OTHER FUNCs
@@ -37,6 +46,17 @@ trsh () {
 CD () {
 	cd $1;
 	ls;
+}
+
+lv () {
+	local divider
+	divider=$(printf '<%*s>' 25 | tr ' ' '=')
+	echo -e "\tDirectories";
+	echo $divider
+	ld;
+	echo -e "\n\tFiles";
+	echo $divider
+	lf -lhB --no-user --no-time;
 }
 
 vimsel () {
