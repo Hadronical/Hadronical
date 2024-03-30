@@ -1,6 +1,3 @@
-" Set not compatible with vi
-set nocompatible
-
 filetype on
 
 call plug#begin('~/local/vim/plug_config')
@@ -13,6 +10,8 @@ call plug#begin('~/local/vim/plug_config')
 	Plug 'mattn/emmet-vim'
 	Plug 'junegunn/limelight.vim'
 	Plug 'jiangmiao/auto-pairs'
+	
+	Plug 'wfxr/minimap.vim'
 	
 call plug#end()
 
@@ -33,11 +32,14 @@ set wildmenu
 let g:python3_host_prog = '/Library/Frameworks/Python.framework/Versions/3.7/bin/python3'
 
 " VISUAL FILE BROWSING
-let g:netrw_banner=0        " disable banner
-let g:netrw_browse_split=4  " open in prior window
-let g:netrw_altv=1          " open splits to right
-let g:netrw_liststyle=3     " tree view
+let g:netrw_banner=0		" disable banner
+let g:netrw_browse_split=4	" open in prior window
+let g:netrw_altv=1			" open splits to right
+let g:netrw_liststyle=3		" tree view
 
+let g:minimap_width=12
+let g:minimap_auto_start=1
+let g:minimap_auto_start_win_enter=1
 
 let g:limelight_conceal_ctermfg = 235
 let g:limelight_paragraph_span = 1
@@ -46,8 +48,7 @@ let g:limelight_paragraph_span = 1
 nnoremap ,f <Esc><C-W>v:edit .<CR><C-W>100<<C-W>30>
 
 " LIMELIGHT MAPPINGS
-nnoremap <Leader>l :Limelight<CR>
-inoremap <Leader>l :Limelight<CR>
+nnoremap <Leader>l :Limelight!!0.7<CR>
 
 " COPY DEFAULT SKELETON FORMAT
 nnoremap ,html :-1read ~/.vim/.skeleton.html<CR>3jwf>a
@@ -69,7 +70,7 @@ nnoremap H gT
 nnoremap L gt
 
 " WINDOW NAVIGATION
-nnoremap <Up>    <C-W>k
+nnoremap <Up>	 <C-W>k
 nnoremap <Down>  <C-W>j
 nnoremap <Left>  <C-W>h
 nnoremap <Right> <C-W>l
@@ -81,81 +82,52 @@ nnoremap <C-J> <C-W>-
 nnoremap <C-K> <C-W>+
 
 
-" CUSTOM COMMANDS
-command! -nargs=* CPP :call CPPCompile(<f-args>)
-command! -nargs=* CC :call BlockComment(<f-args>)
-
 " FUNCTIONS
 " function! TABOptions()
-" 	call popup_menu([':tabnew', ':tabedit', ':tabc'],#{
-" 				\ callback: ('s:selectedCommand')
-" 				\ })
+"	call popup_menu([':tabnew', ':tabedit', ':tabc'],#{
+"				\ callback: ('s:selectedCommand')
+"				\ })
 " endfunction
-
-function! Focus()
-	:set cursorline
-	:set cursorcolumn
-endfunction
 
 function! BlockComment(start, end)
 	execute 'normal! '. a:start. 'GO/*'
 	execute 'normal! '. a:end. 'Go*/'
 endfunction
 
-function! SmartTab()
-	if getline('.') =~ '^\s*$'
-		silent! execute "normal \<S-S>"
-		echo "empty"
-	else
-		silent! execute "normal \<S-A>"
-		echo "not empty"
-	endif
-endfunction
 
+au InsertEnter * set cursorline nocursorcolumn
+au WinEnter * set cursorline
 
-function! AutoComplete()
-	if v:char =~ '\K'
-		\ && getline('.')[col('.') - 3] !~ '\K'
-		" \ && getline('.')[col('.') - 3] =~ '\K'
-		\ && getline('.')[col('.') - 2] =~ '\K'
-		\ && getline('.')[col('.') - 1] !~ '\K'
-		
-		silent! call feedkeys("\<C-N>", 'n')
-		silent! call feedkeys("\<C-P>", 'n')
-	end
-endfunction
+au BufNewFile,BufRead,BufEnter *.* silent loadview
+au BufLeave,BufWinLeave *.* mkview
 
-
-function MyFoldText()
-	let ln = getline(v:foldstart)
-	let nl = v:foldend - v:foldstart + 1
-	let linetext = substitute(ln, "^ *", "", 1)
-	return '+ ' . linetext . ' : length ' . nl
-endfunction
-set foldtext=MyFoldText()
-
-
-au InsertEnter * :set cursorline
-au InsertEnter * :set nocursorcolumn
-au WinEnter * :set cursorline
-" au InsertCharPre * :call AutoComplete()
-
-au BufNewFile,BufRead,BufEnter * :silent loadview
-au BufLeave,BufWinLeave * :mkview
-
-au BufReadPost,BufNewFile *.o :%!xxd; set ft=xxd
+au BufReadPost,BufNewFile *.o %!xxd :set ft=xxd
 
 au WinEnter * if winnr('$') == 1 && getbufvar(winbufnr(winnr()), "&filetype") == "netrw" || &buftype == 'quickfix' |q|endif
 
+
 " Navigating complete menu
-inoremap <expr> <Tab> pumvisible() ? "<C-N>" : "<Tab>"
-inoremap <expr> <Down> pumvisible() ? "<C-N>" : "<Down>"
-inoremap <expr> <Up> pumvisible() ? "<C-P>" : "<Up>"
+inoremap <silent><expr> <TAB>
+	\ coc#pum#visible() ? coc#pum#next(1) :
+	\ CheckBackspace() ? "<Tab>" :
+	\ coc#refresh()
+inoremap <silent><expr> j coc#pum#visible() ? coc#pum#next(1) : "j"
+inoremap <silent><expr> k coc#pum#visible() ? coc#pum#prev(1) : "k"
 " Select complete menu item
-inoremap <expr> <Right> pumvisible() ? "<C-Y>" : "<Right>"
-inoremap <expr> <CR> pumvisible() ? "<C-Y>" : "<CR>"
+inoremap <silent><expr> <RIGHT> coc#pum#visible() ? coc#pum#confirm() : "<RIGHT>"
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() :
+	\ "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
 " Cancels complete menu
-inoremap <expr> <Left> pumvisible() ? "<C-E>" : "<Left>"
+inoremap <expr> <LEFT> coc#pum#visible() ? coc#pum$cancel() : "<LEFT>"
+
+function! CheckBackspace() abort
+	let col = col('.') - 1
+	return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+
+autocmd CursorHold * silent call CocActionAsync('highlight')
+
 
 " Comment current line
 nnoremap <C-C> 0wi//<Esc>
@@ -186,28 +158,46 @@ syntax on
 
 set backspace=indent,eol,start
 
-set fillchars+=vert:\
-set fillchars=fold:\ 
-set completeopt=menuone,preview,noinsert,noselect
-filetype plugin on
-set omnifunc=syntaxcomplete#Complete
+let statuscolumn='%=%{v:relnum?v:relnum:v:lnum} %C%s'
 
+
+
+function MyFoldText()
+	let ln = getline(v:foldstart)
+	let nl = v:foldend - v:foldstart + 1
+	let linetext = substitute(ln, "^ *", "", 1)
+	return '> ' . linetext . ' : length ' . nl . ' '
+endfunction
+set foldtext=MyFoldText()
+set fillchars=fold:\ 
+set fillchars+=foldclose:►
+set fillchars+=foldopen:▼
+set foldcolumn=1
+
+set signcolumn=auto
+
+filetype plugin on
+set completeopt=menuone,preview,noinsert,noselect
+set smarttab
 set tabstop=4 softtabstop=4
 set shiftwidth=4
-set number relativenumber
+
+
+set number relativenumber numberwidth=4
 set scl=yes
 set showcmd
 set noshowmode
 set nostartofline
-set autoindent
-set smartindent
-set ruler
 set incsearch
 set cmdheight=2
 set pumheight=20
 set nowrap
 set showmatch
 set list
+
+set autoindent
+set listchars=tab:\│\ 
+filetype plugin indent on
 
 " match highlighting on when searching, off when done
 augroup vimrc-incsearch-highlight
@@ -216,34 +206,16 @@ augroup vimrc-incsearch-highlight
   autocmd CmdlineLeave /,\? :set nohlsearch
 augroup END
 
-set listchars=tab:\‚îÇ\ 
-
 set mouse=a
 set mousemodel=extend
 
-set foldcolumn=1
 
 " CUSTOM STATUSLINE
-function! Mode()
-	let l:MODE = mode()
-	return {'i': 'INSERT', 'n': 'NORMAL', 'v': 'VISUAL', 'R': 'REPLACE'}[l:MODE]
-endfunction
-
 let g:airline_powerline_fonts=1
 let g:airline#extensions#tabline#enabled=1
 let g:airline#extensions#tabline#buffer_nr_show=1
-let g:airline_section_z = "%3p%% %l:%c"
+let g:airline_section_z = "cursor %3.l:%2.c"
 let g:airline_detect_modified=1
-
-set laststatus=2
-set statusline=
-set statusline+=\ %#Pmenu#
-set statusline+=\ %{Mode()}\ \|\ %f\ %m\ \|\ lines:\ %L
-set statusline+=\ %#CursorColumn#
-set statusline+=\ %= " left align
-set statusline+=\ %y
-set statusline+=\ %r
-set statusline+=\ line\ %l:%c
 
 
 " ------------------------------------
@@ -260,7 +232,6 @@ hi VertSplit ctermbg=233
 
 hi LineNr ctermfg=darkgrey
 hi CursorLine cterm=none ctermbg=234
-hi CursorColumn ctermbg=darkgrey
 hi Cursor ctermbg=grey
 hi NonText ctermfg=yellow
 
@@ -273,13 +244,11 @@ hi Underlined ctermfg=blue
 hi include ctermfg=187
 hi macro ctermfg=187
 
-
 " folds
 hi Folded ctermfg=252 ctermbg=234
-hi foldcolumn ctermfg=252 ctermbg=234
+hi foldcolumn ctermfg=252 ctermbg=235
 
 hi Function cterm=bold ctermfg=172
-
 
 " TYPES AND VALUES
 hi Type ctermfg=darkblue
