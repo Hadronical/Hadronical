@@ -5,7 +5,8 @@ call plug#begin('~/local/vim/plug_config')
 	Plug 'sheerun/vim-polyglot'
 	Plug 'neoclide/coc.nvim', {'branch': 'release'}
 	
-	Plug 'vim-airline/vim-airline'
+	Plug 'nvim-lualine/lualine.nvim'
+	Plug 'nvim-tree/nvim-web-devicons'
 	
 	Plug 'mattn/emmet-vim'
 	Plug 'junegunn/limelight.vim'
@@ -41,11 +42,14 @@ let g:minimap_width=12
 let g:minimap_auto_start=1
 let g:minimap_auto_start_win_enter=1
 
-let g:limelight_conceal_ctermfg = 235
+let g:limelight_conceal_guifg = 235
 let g:limelight_paragraph_span = 1
 
+
+let g:mapleader=" "
+
 " CREATE SIDE FILE EXPLORER
-nnoremap ,f <Esc><C-W>v:edit .<CR><C-W>100<<C-W>30>
+nnoremap <leader>f <Esc><C-W>v:edit .<CR><C-W>100<<C-W>30>
 
 " LIMELIGHT MAPPINGS
 nnoremap <Leader>l :Limelight!!0.7<CR>
@@ -57,15 +61,13 @@ nnoremap ,usaco :-1read ~/.vim/.skeletonusaco.cc<CR>G2kA
 
 " OTHER MAPPINGS
 nnoremap r <C-R>
-vnoremap f :zf<CR>
 nnoremap <Tab> <S-A>
 nnoremap ; :
 cnoremap <C-N> <C-G>
 cnoremap <C-P> <C-T>
 
 " TAB NAVIGATION
-nnoremap ,t :tabnew 
-" nnoremap ,to :call TABOptions()<CR>
+nnoremap <leader>t :tabnew 
 nnoremap H gT
 nnoremap L gt
 
@@ -82,21 +84,9 @@ nnoremap <C-J> <C-W>-
 nnoremap <C-K> <C-W>+
 
 
-" FUNCTIONS
-" function! TABOptions()
-"	call popup_menu([':tabnew', ':tabedit', ':tabc'],#{
-"				\ callback: ('s:selectedCommand')
-"				\ })
-" endfunction
-
-function! BlockComment(start, end)
-	execute 'normal! '. a:start. 'GO/*'
-	execute 'normal! '. a:end. 'Go*/'
-endfunction
-
-
 au InsertEnter * set cursorline nocursorcolumn
 au WinEnter * set cursorline
+set cursorline
 
 au BufNewFile,BufRead,BufEnter *.* silent loadview
 au BufLeave,BufWinLeave *.* mkview
@@ -106,19 +96,20 @@ au BufReadPost,BufNewFile *.o %!xxd :set ft=xxd
 au WinEnter * if winnr('$') == 1 && getbufvar(winbufnr(winnr()), "&filetype") == "netrw" || &buftype == 'quickfix' |q|endif
 
 
-" Navigating complete menu
+set updatetime=300
+" navigating complete menu
 inoremap <silent><expr> <TAB>
 	\ coc#pum#visible() ? coc#pum#next(1) :
-	\ CheckBackspace() ? "<Tab>" :
+	\ CheckBackspace() ? "<TAB>" :
 	\ coc#refresh()
-inoremap <silent><expr> j coc#pum#visible() ? coc#pum#next(1) : "j"
-inoremap <silent><expr> k coc#pum#visible() ? coc#pum#prev(1) : "k"
-" Select complete menu item
-inoremap <silent><expr> <RIGHT> coc#pum#visible() ? coc#pum#confirm() : "<RIGHT>"
+inoremap <silent><expr> <S-TAB> coc#pum#visible() ? coc#pum#prev(1) : ""
+inoremap <silent><expr> <C-J> coc#pum#visible() ? coc#pum#next(1) : "j"
+inoremap <silent><expr> <C-K> coc#pum#visible() ? coc#pum#prev(1) : "k"
+" select complete menu item
 inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() :
 	\ "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
-" Cancels complete menu
-inoremap <expr> <LEFT> coc#pum#visible() ? coc#pum$cancel() : "<LEFT>"
+" cancel complete menu
+inoremap <silent><expr> <ESC> coc#pum#visible() ? coc#pum#cancel() : "<ESC>"
 
 function! CheckBackspace() abort
 	let col = col('.') - 1
@@ -126,24 +117,18 @@ function! CheckBackspace() abort
 endfunction
 
 
+
 autocmd CursorHold * silent call CocActionAsync('highlight')
 
-
-" Comment current line
-nnoremap <C-C> 0wi//<Esc>
-inoremap <C-C> <Esc>0wi//<Esc>``i
-" Comment visual selection lines
-vnoremap <C-C> <Esc>:'<,'>s!^!//!<cr>:noh<cr>
 
 " Terminal emulator
 tnoremap <Esc> <C-\><C-N>
 
 
 " AutoPair config
+let AutoPairsFlyMode=1
 au FileType html let b:AutoPairs = AutoPairsDefine({'<!--':'-->', '<':'>'})
 
-
-" nnoremap <expr> <S-F> (GetCurrentChar() =~ '(') ? "%x``x" :":echo GetCurrentChar()<cr>"
 
 " Slower Scrolling
 noremap <ScrollWheelUp> <C-Y>k
@@ -152,21 +137,21 @@ noremap <ScrollWheelDown> <C-E>j
 " GENERAL CONFIG
 set title
 
-set t_Co=256
+if !has('gui_running')
+	set t_Co=256
+endif
 
-syntax on
 
 set backspace=indent,eol,start
 
-let statuscolumn='%=%{v:relnum?v:relnum:v:lnum} %C%s'
-
+let statuscolumn='%s%=%{v:relnum?v:relnum:v:lnum} %C'
 
 
 function MyFoldText()
 	let ln = getline(v:foldstart)
 	let nl = v:foldend - v:foldstart + 1
 	let linetext = substitute(ln, "^ *", "", 1)
-	return '> ' . linetext . ' : length ' . nl . ' '
+	return '[ ' . linetext . ' : length ' . nl . ' ]'
 endfunction
 set foldtext=MyFoldText()
 set fillchars=fold:\ 
@@ -189,11 +174,16 @@ set showcmd
 set noshowmode
 set nostartofline
 set incsearch
+set inccommand
 set cmdheight=2
 set pumheight=20
 set nowrap
 set showmatch
 set list
+
+set termguicolors
+set t_Co=256
+let &t_Cs = "\e[60m"
 
 set autoindent
 set listchars=tab:\│\ 
@@ -210,55 +200,65 @@ set mouse=a
 set mousemodel=extend
 
 
-" CUSTOM STATUSLINE
-let g:airline_powerline_fonts=1
-let g:airline#extensions#tabline#enabled=1
-let g:airline#extensions#tabline#buffer_nr_show=1
-let g:airline_section_z = "cursor %3.l:%2.c"
-let g:airline_detect_modified=1
-
-
 " ------------------------------------
 " HIGHLIGHTING
 " ------------------------------------
 
-" syntax highlighting
+" VIM EDITOR HIGHLIGHTING
+syntax on
 colorscheme slate
-hi Normal ctermfg=254
-hi Pmenu ctermfg=white ctermbg=darkgrey
-hi PmenuSel cterm=bold ctermfg=white ctermbg=DarkCyan
 
-hi VertSplit ctermbg=233
+hi Pmenu guifg=LightGray guibg=#1a1a1a
+hi PmenuSel gui=bold guifg=Cyan guibg=#252525
+hi def link PmenuKind Pmenu
+hi PmenuThumb guibg=#252525
 
-hi LineNr ctermfg=darkgrey
-hi CursorLine cterm=none ctermbg=234
-hi Cursor ctermbg=grey
-hi NonText ctermfg=yellow
+hi Visual gui=none guifg=LightGray guibg=#306080
 
-hi MatchParen ctermbg=white
+hi Directory guifg=#9DD9D2
 
-hi SpecialKey ctermfg=darkgrey
+hi VertSplit guibg=none
 
-hi Underlined ctermfg=blue
+hi LineNr guifg=Gray guibg=#0e0e0e
+hi CursorLine guibg=#080808
+hi CursorLineNr gui=bold guifg=LightGray guibg=#080808
+hi Cursor guibg=Gray
 
-hi include ctermfg=187
-hi macro ctermfg=187
+hi TabLineSel guifg=LightGray guibg=#306080
 
-" folds
-hi Folded ctermfg=252 ctermbg=234
-hi foldcolumn ctermfg=252 ctermbg=235
+" CODE RELATED
+hi Normal guifg=LightGray
+hi NonText guifg=Yellow
 
-hi Function cterm=bold ctermfg=172
+hi MatchParen guibg=White
+
+hi SpecialKey guifg=DarkGray
+
+hi Underlined gui=underline guifg=blue
+
+hi include guifg=#F4D06F
+hi macro guifg=#F4D06F
+
+" LEFT COLUMN
+hi Folded guifg=LightGray guibg=#0e0e0e
+hi foldcolumn guifg=White guibg=#0e0e0e
+hi signcolumn guibg=#0e0e0e
+
+hi Function gui=bold guifg=#e1e289
 
 " TYPES AND VALUES
-hi Type ctermfg=darkblue
-hi Constant ctermfg=130
-hi Number ctermfg=117
-hi String ctermfg=LightGreen
-hi Character ctermfg=LightGreen
-hi Boolean ctermfg=red
+hi Type guifg=#0f88d4
 
-hi Comment cterm=italic ctermfg=white ctermbg=237
-hi Statement ctermfg=red
-hi Conditional ctermfg=197
-hi Repeat ctermfg=197
+hi Constant guifg=130
+
+hi Number guifg=Orange
+hi String guifg=LightGreen
+hi Character guifg=LightGreen
+hi Boolean guifg=LightRed
+
+" OTHER
+hi Comment gui=italic guifg=white guibg=#3f3f3f
+hi Statement guifg=#f34213
+hi Conditional guifg=#f34213
+hi Repeat guifg=#f34213
+hi Operator guifg=#ffd700
