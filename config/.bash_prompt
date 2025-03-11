@@ -3,20 +3,35 @@ export CLICOLOR=1
 export LSCOLORS=ExFxBxDxCxegedabagacad
 
 
+# COLOR ESCAPE CHARACTERS
+BLINK=$(tput blink)
+BOLD=$(tput bold)
+RESET=$(tput sgr0)
+
 # TERMINAL PROMPT
 custom_prompt () {
-	local NUMFILES
-	NUMFILES=$(find . -maxdepth 1 -type f | wc -l)
+	local numfiles
+	local numdirs
+	local parentdir
+	numfiles=$(find . -maxdepth 1 -type f | wc -l)
+	numdirs=$(find . -maxdepth 1 -type d | wc -l)
+	parentdir=$(basename "$(dirname "$PWD")")/
+
+	if [[ $PWD == $HOME ]]; then
+		parentdir=""
+	fi
 	
-	PS1="\[\e[97;44m\]\u "		# USERNAME
+	PS1="\[\e[97;44m\] \u "		# USERNAME
 	PS1+="\[\e[34;40m\] "
-	PS1+="\[\e[37;40m\]\W "		# CURRRENT DIRECTORY
-	PS1+="\[\e[90m\](${NUMFILES//[[:blank:]]/}) "
+	PS1+="\[\e[37;40m\]$parentdir$BOLD\W $RESET"		# CURRRENT DIRECTORY
+	PS1+="\[\e[90;40m\]$BLINK(${numdirs//[[:blank:]]/}d ${numfiles//[[:blank:]]/}f) $RESET"
 	PS1+="\[\e[30;49m\] "
-	PS1+="\[\e[m\]"
+	PS1+="$RESET"
 	export PS1;
 }
 PROMPT_COMMAND=custom_prompt
+
+PS2="| "
 
 
 # WELCOME MESSAGE
@@ -38,3 +53,4 @@ message () {
 }
 
 message "❮ Welcome Back ❯"
+neofetch
